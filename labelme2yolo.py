@@ -67,6 +67,7 @@ yolo_backup_path = os.path.join(args.output, 'backup')
 # train, valid 디렉토리 생성
 os.mkdir(yolo_train_path)
 os.mkdir(yolo_valid_path)
+os.mkdir(yolo_backup_path)
 
 # train.txt, valid.txt
 yolo_train_txt = open(yolo_train_text_path, 'w')
@@ -84,7 +85,7 @@ for labelme_json_path in glob(f'{args.path}/*.json'): # json 만 조회
     yolo_annotation_name = labelme_json_path.split('/')[-1:][0].replace('.json', '.txt')
     yolo_annotation_path = os.path.join(args.output, train_or_valid, yolo_annotation_name)
 
-    # write to train.txt
+    # write to train.txt, valid.txt
     im_file_list = [yolo_annotation_name.split('.')[0] + ext for ext in im_ext]
     im_file_name = [im_file for im_file in im_file_list if im_file in os.listdir(args.path)][0]
     if train_or_valid == 'train':
@@ -115,8 +116,9 @@ for labelme_json_path in glob(f'{args.path}/*.json'): # json 만 조회
                 # convert((w, h), bbox)
                 bbox = convert((int(im.size[0]), int(im.size[1])), (xmin, xmax, ymin, ymax))
                 
-                yolo_annotation_file = open(yolo_annotation_path, 'w')
+                yolo_annotation_file = open(yolo_annotation_path, 'a')
                 yolo_annotation_file.write(f'{obj_classes.index(obj_class)} {" ".join([str(a) for a in bbox])} \n')
+#                yolo_annotation_file.write(f'0 {" ".join([str(a) for a in bbox])} \n') # for single object
                 shutil.copy(os.path.join(args.path, im_file_name), os.path.join(args.output, train_or_valid, im_file_name))
             else:
                 pass
@@ -128,7 +130,7 @@ for labelme_json_path in glob(f'{args.path}/*.json'): # json 만 조회
 yolo_obj_data_file = open(yolo_obj_data_path, 'w')
 yolo_obj_data_file.write('classes = ' + str(len(obj_classes)) + '\n')
 yolo_obj_data_file.write('train = ' + yolo_train_text_path + '\n')
-yolo_obj_data_file.write('valid = ' + yolo_valid_path + '\n')
+yolo_obj_data_file.write('valid = ' + yolo_valid_text_path + '\n')
 yolo_obj_data_file.write('names = ' + yolo_obj_names_path + '\n')
 yolo_obj_data_file.write('backup = ' + yolo_backup_path)
 yolo_obj_data_file.close()
